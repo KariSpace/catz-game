@@ -5,6 +5,7 @@ import { Building } from '../entities/Building';
 import { CharacterUnit } from '../entities/CharacterUnit';
 import { Ground } from '../entities/Ground';
 import { ProjectileEntity } from '../entities/ProjectileEntity';
+import { sampleArc, velocityFromAim } from '../physics/ballistics';
 import { PhysicsWorld, type BodyRef } from '../physics/PhysicsWorld';
 import { TurnSystem } from '../systems/TurnSystem';
 import { FishMinigame } from '../ui/FishMinigame';
@@ -277,24 +278,17 @@ export class GameScene extends Phaser.Scene {
     this.turns.current?.setActive(false);
   }
 
-  /** Пунктирне прев'ю дуги: та сама балістика (гравітація + вітер), без колізій */
+  /** Пунктирне прев'ю дуги: балістика СПІЛЬНА з реальним польотом (ballistics.ts) */
   private drawTrajectory(char: CharacterUnit): void {
-    const def = WEAPONS[char.selectedWeapon];
-    const speed = def.muzzleSpeedPx * (char.aimPower / 100);
-    const rad = Phaser.Math.DegToRad(char.aimAngle);
-    const origin = char.fireOrigin();
-    const vx = Math.cos(rad) * speed;
-    const vy = -Math.sin(rad) * speed * (def.behavior === 'mortar' ? 1.4 : 1);
-    const g = PHYSICS.GRAVITY_M * 50;
+    const vel = velocityFromAim(char.aimAngle, char.aimPower, char.selectedWeapon);
+    const pts = sampleArc(char.fireOrigin(), vel, this.wind);
 
     this.trajGfx.clear();
-    for (let i = 1; i <= 16; i++) {
-      const t = i * 0.09;
-      const x = origin.x + vx * t + 0.5 * this.wind * t * t;
-      const y = origin.y + vy * t + 0.5 * g * t * t;
-      if (y > VIEW.H || x < 0 || x > VIEW.W) break;
-      this.trajGfx.fillStyle(0xfbbf24, Math.max(0.1, 0.5 - i * 0.025));
-      this.trajGfx.fillCircle(x, y, 3);
+    for (let i = 0; i < pts.length; i++) {
+      const p = pts[i];
+      if (p.y > VIEW.H || p.x < 0 || p.x > VIEW.W) break;
+      this.trajGfx.fillStyle(0xfbbf24, Math.max(0.1, 0.5 - (i + 1) * 0.025));
+      this.trajGfx.fillCircle(p.x, p.y, 3);
     }
   }
 

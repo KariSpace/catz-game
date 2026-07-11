@@ -40,7 +40,7 @@
     опору під собою по X.
 - **Готово, коли:** `npm test` зелений; валідація ловить навмисно зіпсутий блупринт.
 
-### [ ] T3. Fix: AirConsole-сумісний білд (screen.html)
+### [x] T3. Fix: AirConsole-сумісний білд (screen.html)
 AirConsole на проді завантажує `screen.html` + `controller.html`, а Vite зараз
 збирає `index.html` — екран на проді не піднімається.
 - Перейменувати `index.html` → `screen.html`, оновити `vite.config.ts`
@@ -55,7 +55,7 @@ AirConsole на проді завантажує `screen.html` + `controller.html
 
 ## Фаза 1 — механічні чистки (поведінка не змінюється)
 
-### [ ] T4. Єдиний модуль балістики
+### [x] T4. Єдиний модуль балістики
 Зараз формули польоту продубльовані: `ProjectileEntity.fromAim` і
 `GameScene.drawTrajectory` (там ще й хардкод `* 50` замість `PIXELS_PER_METER`).
 - Новий `src/screen/physics/ballistics.ts`:

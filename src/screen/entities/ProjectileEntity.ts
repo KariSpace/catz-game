@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { WEAPONS, type WeaponDef } from '../../shared/config';
 import type { WeaponKey } from '../../shared/protocol';
+import { velocityFromAim } from '../physics/ballistics';
 import type { BodyRef, PhysicsWorld } from '../physics/PhysicsWorld';
 import type { CharacterUnit } from './CharacterUnit';
 
@@ -54,14 +55,8 @@ export class ProjectileEntity {
     windPxS2: number,
     shooter: CharacterUnit,
   ): ProjectileEntity {
-    const def = WEAPONS[weaponKey];
-    const speed = def.muzzleSpeedPx * (power / 100);
-    const rad = Phaser.Math.DegToRad(angleDeg);
-    let vx = Math.cos(rad) * speed;
-    let vy = -Math.sin(rad) * speed;
-    if (def.behavior === 'mortar') vy *= 1.4; // мортира: вища навісна дуга
-
-    return new ProjectileEntity(scene, physics, x, y, vx, vy, weaponKey, windPxS2, shooter);
+    const vel = velocityFromAim(angleDeg, power, weaponKey);
+    return new ProjectileEntity(scene, physics, x, y, vel.x, vel.y, weaponKey, windPxS2, shooter);
   }
 
   get x(): number { return this.physics.posPx(this.ref).x; }
