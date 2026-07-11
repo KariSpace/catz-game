@@ -127,7 +127,7 @@ export class MenuScene extends Phaser.Scene {
   private tryStart(): void {
     if (hub.team('cats').length < 1 || hub.team('dogs').length < 1) return;
 
-    if (hub.mode === 'keyboard') {
+    if (hub.isSolo()) {
       // Соло-розробка: голосувати нікому — рандомні бази,
       // або явні через ?struct=tower,bunker
       const pick = () => STRUCTURES[Phaser.Math.Between(0, STRUCTURES.length - 1)];

@@ -44,7 +44,7 @@ export class VictoryScene extends Phaser.Scene {
   }
 
   private rematch(): void {
-    if (hub.mode === 'keyboard') {
+    if (hub.isSolo()) {
       this.scene.start('MenuScene');
       return;
     }

@@ -31,6 +31,11 @@ export class PlayerHub extends Phaser.Events.EventEmitter {
     return this.transport.mode;
   }
 
+  /** Соло-розробка без телефонів: голосувати нікому, реванш — через меню */
+  isSolo(): boolean {
+    return this.transport.mode === 'keyboard';
+  }
+
   private handleConnect(id: PlayerId): void {
     const player: Player = { id, team: null, name: `Player ${this.players.size + 1}` };
     this.players.set(id, player);
