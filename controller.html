@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <title>CATZ vs DOGZ — Controller</title>
+</head>
+<body>
+
+<div id="screen-connected" class="screen">
+  <div class="center-screen">
+    <div class="big-emoji">🎮</div>
+    <div class="big-text">Підключено!</div>
+    <div class="sub-text">Зачекайте…</div>
+  </div>
+</div>
+
+<div id="screen-team" class="screen">
+  <div class="header">Оберіть свою команду</div>
+  <div class="team-btns">
+    <button class="team-btn cats" data-team="cats">🐱 Cats</button>
+    <button class="team-btn dogs" data-team="dogs">🐶 Dogs</button>
+  </div>
+</div>
+
+<div id="screen-lobby" class="screen">
+  <div class="center-screen">
+    <div class="big-emoji" id="lobby-emoji">🐱</div>
+    <div class="big-text">Команда обрана</div>
+    <div class="sub-text">Очікуємо інших гравців…</div>
+    <button class="result-btn" id="start-btn">▶ Почати гру</button>
+  </div>
+</div>
+
+<div id="screen-vote" class="screen">
+  <div class="header">Оберіть базу для своєї команди</div>
+  <div class="vote-timer" id="vote-timer"></div>
+  <div class="vote-options" id="vote-options"></div>
+</div>
+
+<div id="screen-turn" class="screen">
+  <div class="header"><b id="turn-name">Ваш хід</b> — свайпайте, щоб регулювати приціл</div>
+  <div class="swipe-zone" id="swipe-zone">
+    <div class="swipe-hint">↕ Свайпайте скільки треба:<br>напрям — кут, довжина — сила</div>
+    <div class="aim-indicator" id="aim-indicator"></div>
+  </div>
+  <div class="fire-row">
+    <div class="weapon-bar" id="weapon-bar"></div>
+    <button class="fire-btn" id="fire-btn">🔥 ВОГОНЬ</button>
+  </div>
+</div>
+
+<div id="screen-wait" class="screen">
+  <div class="center-screen">
+    <div class="big-emoji">⏳</div>
+    <div class="big-text">Хід суперника</div>
+    <div class="sub-text">Слідкуйте за екраном</div>
+  </div>
+</div>
+
+<div id="screen-fish2" class="screen">
+  <div class="header">Стрілочка рухається — тапни у потрібний момент!</div>
+  <div class="fish-zone">
+    <div class="big-emoji">🐟</div>
+    <button class="fish-tap-btn" id="fish-tap-btn">ТАП!</button>
+    <div class="sub-text">Рибка вистрибне там, де стрілочка</div>
+  </div>
+</div>
+
+<div id="screen-result" class="screen">
+  <div class="center-screen">
+    <div class="big-emoji" id="result-emoji">🏆</div>
+    <div class="big-text" id="result-text">Перемога!</div>
+    <button class="result-btn" id="rematch-btn">🔁 Реванш</button>
+  </div>
+</div>
+
+<script src="https://www.airconsole.com/api/airconsole-1.8.0.js"></script>
+<script type="module" src="/src/controller/main.ts"></script>
+</body>
+</html>
