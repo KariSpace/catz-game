@@ -12,10 +12,13 @@ npm run dev        # Vite (екран+контролер) + WS-релей одн
 
 | Режим | URL |
 |---|---|
-| Соло з клавіатури | `http://localhost:5173/?kb=1` |
-| Соло, конкретні бази | `http://localhost:5173/?kb=1&struct=tower,bunker` |
-| З телефоном (та сама WiFi) | екран `http://localhost:5173/?local=1`, телефон `http://<IP>:5173/controller.html?local=1` |
+| Соло з клавіатури | `http://localhost:5173/screen.html?kb=1` |
+| Соло, конкретні бази | `http://localhost:5173/screen.html?kb=1&struct=tower,bunker` |
+| З телефоном (та сама WiFi) | екран `http://localhost:5173/screen.html?local=1`, телефон `http://<IP>:5173/controller.html?local=1` |
 | AirConsole (прод) | `npm run build` → задеплоїти `dist/` → AirConsole підхоплює `screen.html`/`controller.html` |
+
+(`http://localhost:5173/` без шляху теж працює — `index.html` редіректить на
+`screen.html`, зберігаючи параметри.)
 
 Клавіатура (dev): `A/D` кут, `W/S` сила, `1/2` зброя, `SPACE` вогонь/тап, у меню `SPACE` старт.
 

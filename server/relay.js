@@ -1,7 +1,7 @@
 // Dev-релей для локального тесту з телефоном: імітує транспорт AirConsole
 // через WebSocket. Статику віддає Vite (npm run dev), релей — лише повідомлення.
 //
-//   Екран:    http://localhost:5173/?local=1
+//   Екран:    http://localhost:5173/screen.html?local=1
 //   Телефон:  http://<IP-ноутбука>:5173/controller.html?local=1  (та сама WiFi)
 
 import { WebSocketServer } from 'ws';
@@ -71,7 +71,7 @@ function localIP() {
 console.log(`
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   Релей запущено на порту ${PORT}
-  🎮  Екран:    http://localhost:5173/?local=1
+  🎮  Екран:    http://localhost:5173/screen.html?local=1
   📱  Телефон:  http://${localIP()}:5173/controller.html?local=1
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 `);

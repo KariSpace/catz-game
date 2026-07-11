@@ -6,7 +6,8 @@ export default defineConfig({
     target: 'es2022',
     rollupOptions: {
       input: {
-        screen: resolve(__dirname, 'index.html'),
+        // AirConsole вимагає саме screen.html + controller.html у корені dist/
+        screen: resolve(__dirname, 'screen.html'),
         controller: resolve(__dirname, 'controller.html'),
       },
     },
