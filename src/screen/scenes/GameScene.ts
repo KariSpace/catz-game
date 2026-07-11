@@ -109,6 +109,10 @@ export class GameScene extends Phaser.Scene {
     this.wind = Phaser.Math.Between(-PHYSICS.WIND_MAX_PX, PHYSICS.WIND_MAX_PX);
     this.turnDeadline = this.time.now + ROUND.TURN_SECONDS * 1000;
 
+    // Стрілець «невидимий» для снарядів на час прицілювання (виліт з дула);
+    // скидається в clearAim — після пострілу снаряд може влучити і в нього
+    this.physics_.setShooter(current.ref, true);
+
     // База стрільця — «примарна»: прозора, снаряд пролітає крізь неї
     const [catB, dogB] = this.buildings;
     catB.setGhost(current.team === 'cats');
@@ -275,7 +279,10 @@ export class GameScene extends Phaser.Scene {
 
   private clearAim(): void {
     this.trajGfx.clear();
-    this.turns.current?.setActive(false);
+    const current = this.turns.current;
+    if (!current) return;
+    current.setActive(false);
+    if (!current.dead) this.physics_.setShooter(current.ref, false);
   }
 
   /** Пунктирне прев'ю дуги: балістика СПІЛЬНА з реальним польотом (ballistics.ts) */
@@ -294,10 +301,9 @@ export class GameScene extends Phaser.Scene {
 
   // ─── Фізичні події ───────────────────────────────────────────────────
 
-  private onProjectileContact(projRef: BodyRef, otherRef: BodyRef | null): void {
+  private onProjectileContact(projRef: BodyRef, _otherRef: BodyRef | null): void {
     const proj = projRef.tag.owner as ProjectileEntity;
     if (proj.finished || proj === this.floatProj) return;
-    if (proj.ignoresContactWith(otherRef?.tag.owner, this.time.now)) return;
 
     if (proj.weapon.behavior === 'fishing' && !proj.isFragment) {
       this.enterFishPhase(proj);

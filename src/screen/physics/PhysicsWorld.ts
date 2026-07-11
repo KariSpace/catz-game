@@ -24,15 +24,20 @@ export interface StepHandlers {
   onImpact?(ref: BodyRef, dv: number): void;
 }
 
-// Групи колізій: u32 = (членство << 16) | маска-фільтр.
+// Групи колізій: u32 = (членство << 16) | маска-фільтр. Колізія є, коли
+// (m1 & f2) і (m2 & f1) обидва ненульові.
 // «Примарні» блоки (база команди, що зараз ходить) не взаємодіють зі
 // снарядами, але далі стоять у світі й тримають персонажів.
+// «Стрілець» (активний персонаж) не взаємодіє зі снарядами на вильоті —
+// група вмикається на час прицілювання і скидається при пострілі.
 const BIT_WORLD = 0x0001;
 const BIT_PROJ = 0x0002;
+const BIT_SHOOTER = 0x0004;
 const GROUPS = {
-  world: (BIT_WORLD << 16) | (BIT_WORLD | BIT_PROJ),
-  ghostBlock: (BIT_WORLD << 16) | BIT_WORLD,
+  world: (BIT_WORLD << 16) | (BIT_WORLD | BIT_PROJ | BIT_SHOOTER),
+  ghostBlock: (BIT_WORLD << 16) | (BIT_WORLD | BIT_SHOOTER), // тримає стрільця, ігнорує снаряди
   projectile: (BIT_PROJ << 16) | BIT_WORLD, // снаряд-снаряд теж не стикаються
+  shooter: (BIT_SHOOTER << 16) | (BIT_WORLD | BIT_SHOOTER),
 } as const;
 
 let rapierReady = false;
@@ -195,6 +200,15 @@ export class PhysicsWorld {
   /** Блок «примарної» бази не стикається зі снарядами (візуально — прозорий) */
   setBlockGhost(ref: BodyRef, ghost: boolean): void {
     ref.collider.setCollisionGroups(ghost ? GROUPS.ghostBlock : GROUPS.world);
+  }
+
+  /**
+   * Активний персонаж на час прицілювання «невидимий» для снарядів —
+   * власний постріл не детонує на вильоті. Скидати при пострілі/таймауті,
+   * щоб навісна дуга по собі таки влучала.
+   */
+  setShooter(ref: BodyRef, on: boolean): void {
+    ref.collider.setCollisionGroups(on ? GROUPS.shooter : GROUPS.world);
   }
 
   /**

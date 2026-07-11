@@ -10,7 +10,6 @@ export class ProjectileEntity {
   readonly weapon: WeaponDef;
   readonly weaponKey: WeaponKey;
   readonly shooter: CharacterUnit | null;
-  readonly firedAt: number;
   /** Кластерний осколок не породжує нових осколків */
   readonly isFragment: boolean;
 
@@ -36,7 +35,6 @@ export class ProjectileEntity {
     this.weapon = WEAPONS[weaponKey];
     this.shooter = shooter;
     this.isFragment = opts.isFragment ?? false;
-    this.firedAt = scene.time.now;
 
     const radius = this.isFragment ? 5 : 8;
     this.ref = physics.createProjectile(x, y, radius, { x: velX, y: velY }, windPxS2, this);
@@ -61,11 +59,6 @@ export class ProjectileEntity {
 
   get x(): number { return this.physics.posPx(this.ref).x; }
   get y(): number { return this.physics.posPx(this.ref).y; }
-
-  /** Контакт із власником у перші миті польоту не рахується */
-  ignoresContactWith(other: unknown, now: number): boolean {
-    return other === this.shooter && now - this.firedAt < 250;
-  }
 
   sync(): void {
     if (this.finished) return;
