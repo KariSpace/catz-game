@@ -8,6 +8,7 @@ import { ProjectileEntity } from '../entities/ProjectileEntity';
 import { sampleArc, velocityFromAim } from '../physics/ballistics';
 import { PhysicsWorld, type BodyRef } from '../physics/PhysicsWorld';
 import { TurnSystem } from '../systems/TurnSystem';
+import { opposite, resolveWinner, type MatchResult } from '../systems/matchResult';
 import { FishMinigame } from '../ui/FishMinigame';
 import { HUD } from '../ui/HUD';
 import { banner, damageNumber, explosionFx } from '../ui/fx';
@@ -34,6 +35,9 @@ export class GameScene extends Phaser.Scene {
   private settleStart = 0;
   /** Шкода від ударів вмикається з першого ходу — початкове осідання безболісне */
   private matchStarted = false;
+  /** Для політики взаємознищення: чий був останній постріл і чи був він прямим */
+  private lastShooterTeam: Team | null = null;
+  private lastShotDirectHit = false;
   private projectiles: ProjectileEntity[] = [];
   private fish: FishMinigame | null = null;
   private floatProj: ProjectileEntity | null = null;
@@ -102,7 +106,12 @@ export class GameScene extends Phaser.Scene {
 
   private startTurn(): void {
     const current = this.turns.next();
-    if (!current) return this.endMatch();
+    if (!current) {
+      // Усі мертві — взаємознищення вирішує політика «все або нічого»
+      const result = resolveWinner(true, true, this.lastShooterTeam, this.lastShotDirectHit);
+      if (result) this.endMatch(result);
+      return;
+    }
 
     this.matchStarted = true;
     this.state = 'aiming';
@@ -186,23 +195,28 @@ export class GameScene extends Phaser.Scene {
   private finishTurnResolve(): void {
     this.hud.updateTeamHp(this.teamChars('cats'), this.teamChars('dogs'));
 
-    const defeated = this.turns.defeatedTeam();
-    if (defeated) return this.endMatch(defeated);
+    const result = resolveWinner(
+      this.turns.alive('cats').length === 0,
+      this.turns.alive('dogs').length === 0,
+      this.lastShooterTeam,
+      this.lastShotDirectHit,
+    );
+    if (result) return this.endMatch(result);
 
     this.startTurn();
   }
 
-  /** Кінець матчу. Якщо мертві обидві команди, перемагають dogs (cats перевіряються першими) */
-  private endMatch(defeated?: Team | null): void {
+  /** Кінець матчу за політикою matchResult (взаємознищення — «все або нічого») */
+  private endMatch(result: MatchResult): void {
     if (this.state === 'ended') return;
     this.state = 'ended';
 
-    const loser: Team = defeated ?? this.turns.defeatedTeam() ?? 'cats';
-    const winner: Team = loser === 'cats' ? 'dogs' : 'cats';
+    const winner = result.winner;
+    if (result.heroic) banner(this, '⚡ ВСЕ АБО НІЧОГО!', '#fbbf24');
 
     hub.sendToTeam(winner, { type: 'you_win' });
-    hub.sendToTeam(loser, { type: 'you_lose' });
-    this.time.delayedCall(800, () => this.scene.start('VictoryScene', { winner }));
+    hub.sendToTeam(opposite(winner), { type: 'you_lose' });
+    this.time.delayedCall(result.heroic ? 1800 : 800, () => this.scene.start('VictoryScene', { winner }));
   }
 
   // ─── Ввід ────────────────────────────────────────────────────────────
@@ -266,6 +280,9 @@ export class GameScene extends Phaser.Scene {
     if ((current.ammo[key] ?? 0) <= 0) return;
     if (current.ammo[key] !== Infinity) current.ammo[key] = (current.ammo[key] ?? 1) - 1;
 
+    this.lastShooterTeam = current.team;
+    this.lastShotDirectHit = false;
+
     current.setAim(angle, power);
     const origin = current.fireOrigin();
     this.projectiles.push(
@@ -301,7 +318,7 @@ export class GameScene extends Phaser.Scene {
 
   // ─── Фізичні події ───────────────────────────────────────────────────
 
-  private onProjectileContact(projRef: BodyRef, _otherRef: BodyRef | null): void {
+  private onProjectileContact(projRef: BodyRef, otherRef: BodyRef | null): void {
     const proj = projRef.tag.owner as ProjectileEntity;
     if (proj.finished || proj === this.floatProj) return;
 
@@ -313,6 +330,13 @@ export class GameScene extends Phaser.Scene {
     if (proj.weapon.behavior === 'cluster' && !proj.isFragment) {
       this.splitCluster(proj);
       return;
+    }
+
+    // Снаряд вибухає безпосередньо на ворожому персонажі — «прямий постріл»
+    // для політики взаємознищення (matchResult)
+    if (otherRef?.tag.kind === 'character' && proj.shooter) {
+      const target = otherRef.tag.owner as CharacterUnit;
+      if (!target.dead && target.team !== proj.shooter.team) this.lastShotDirectHit = true;
     }
 
     this.explode(proj.x, proj.y, proj.weaponKey);
